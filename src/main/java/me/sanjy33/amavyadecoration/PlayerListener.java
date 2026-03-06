@@ -1,7 +1,6 @@
 package me.sanjy33.amavyadecoration;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
-import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -10,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
-import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -20,18 +18,11 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.util.Transformation;
-import org.joml.AxisAngle4f;
-import org.joml.Vector3f;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
 
 public class PlayerListener implements Listener {
 
@@ -92,13 +83,13 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            plugin.shelfManager.refreshNearbyDisplays(event.getPlayer().getLocation());
-        }, 20L);
+        if (!plugin.shelfManager.isEnabled()) return;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.shelfManager.refreshNearbyDisplays(event.getPlayer().getLocation()), 20L);
     }
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+        if (!plugin.shelfManager.isEnabled()) return;
         Block block = event.getBlock();
         if (!isSlab(block)) return;
 
@@ -108,6 +99,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onBLockDestroy(BlockDestroyEvent event) {
+        if (!plugin.shelfManager.isEnabled()) return;
         Block block = event.getBlock();
         if (!isSlab(block)) return;
 
@@ -117,6 +109,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
+        if (!plugin.shelfManager.isEnabled()) return;
         if (!isSlab(event.getExplodedBlockState().getBlock())) return;
 
         Location blockLocation = event.getBlock().getLocation().toCenterLocation();
@@ -125,6 +118,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent event) {
+        if (!plugin.shelfManager.isEnabled()) return;
         for (Block block : event.blockList()) {
             if (isSlab(block)) {
                 plugin.shelfManager.deleteShelfAtLocation(block.getLocation(), true);
@@ -134,16 +128,16 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onChunkLoaded(ChunkLoadEvent event) {
+        if (!plugin.shelfManager.isEnabled()) return;
         if (event.isNewChunk()) return; // Shelves are never in new chunks
         plugin.shelfManager.refreshDisplaysInChunk(event.getChunk());
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-
+        if (!plugin.shelfManager.isEnabled()) return;
         EquipmentSlot hand = event.getHand();
         if (hand == null) return;
-//        plugin.getLogger().log(Level.INFO, hand.name());
         if (!hand.equals(EquipmentSlot.HAND)) return;
         if (!event.getAction().isRightClick()) return;
 
@@ -181,7 +175,6 @@ public class PlayerListener implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
 
         Location subLoc = blockLocation.clone().subtract(interactionPoint);
-//        plugin.getLogger().log(Level.INFO, "Interact coords: " + subLoc.getX() + ", " + subLoc.getZ());
         int slotIndex;
         if (subLoc.getX() > 0 && subLoc.getZ() > 0) {
             slotIndex = 0;
@@ -195,7 +188,6 @@ public class PlayerListener implements Listener {
 
         if (!player.isSneaking()) {
             if (shelf.isSlotEmpty(slotIndex) && (!playerInventory.getItemInMainHand().isEmpty())) {
-//                plugin.getLogger().log(Level.INFO, "Slot " + slotIndex + " is empty.");
                 shelf.setSlotMaterial(slotIndex, itemStack);
                 if (itemStack.getAmount() == 1) {
                     playerInventory.setItemInMainHand(null);
@@ -203,13 +195,12 @@ public class PlayerListener implements Listener {
                     itemStack.setAmount(itemStack.getAmount()-1);
                 }
             }else{
-//                plugin.getLogger().log(Level.INFO, "Rotating slot " + slotIndex + ".");
                 shelf.rotateSlot(slotIndex, 45);
             }
         }else{
             Shelf.ShelfSlot originalSlot = shelf.setSlot(slotIndex, null);
             if (originalSlot != null)
-                player.getWorld().dropItem(blockLocation, new ItemStack(originalSlot.getItemStack()));
+                player.getWorld().dropItem(blockLocation, new ItemStack(originalSlot.itemStack()));
         }
 
         shelf.refreshSlot(slotIndex);

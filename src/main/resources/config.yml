@@ -1,0 +1,5 @@
+slab_shelves:
+  enabled: true
+chiseled_bookshelf_display:
+  enabled: true
+  view_radius: 3

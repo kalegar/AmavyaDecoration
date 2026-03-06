@@ -1,8 +1,13 @@
 package me.sanjy33.amavyadecoration;
 
+import io.papermc.paper.command.brigadier.BasicCommand;
+import me.sanjy33.amavyadecoration.command.ReloadCommand;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibMissing;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibHook;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibWrapper;
+import me.sanjy33.amavyadecoration.manager.AmavyaDecorationManager;
+import me.sanjy33.amavyadecoration.manager.ChiseledBookshelfManager;
+import me.sanjy33.amavyadecoration.manager.ShelfManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -11,10 +16,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class AmavyaDecoration extends JavaPlugin {
 
-    private Listener eventListener;
+    public final List<AmavyaDecorationManager> managers = new ArrayList<>();
     public final ShelfManager shelfManager = new ShelfManager(this);
     public final ChiseledBookshelfManager chiseledBookshelfManager = new ChiseledBookshelfManager(this);
     public AmavyaParticleLibHook particleLibHook;
@@ -22,22 +29,37 @@ public final class AmavyaDecoration extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        eventListener = new PlayerListener(this);
+        Listener eventListener = new PlayerListener(this);
 
         setupAmavyaParticleLib();
 
+        BasicCommand reloadCommand = new ReloadCommand(this);
+        registerCommand("adreload", reloadCommand);
+
         getServer().getPluginManager().registerEvents(eventListener, this);
+        saveDefaultConfig();
         load();
-        shelfManager.refreshDisplays();
-        chiseledBookshelfManager.startBookshelfTask();
+        reloadManagers();
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        shelfManager.cleanupDisplays();
-        chiseledBookshelfManager.cleanup();
+        for (AmavyaDecorationManager manager :  managers) {
+            manager.cleanup();
+        }
         save();
+    }
+
+    public void reloadManagers() {
+        for (AmavyaDecorationManager manager : managers) {
+            manager.reload();
+            if (manager.isEnabled()) {
+                getLogger().info(manager.getName() + " is enabled.");
+            } else {
+                getLogger().info(manager.getName() + " is disabled.");
+            }
+        }
     }
 
     private void load() {
@@ -48,9 +70,7 @@ public final class AmavyaDecoration extends JavaPlugin {
     }
 
     public void saveAsync() {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(this, () -> {
-            save();
-        }, 1L);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(this, this::save, 1L);
     }
 
     private void save() {

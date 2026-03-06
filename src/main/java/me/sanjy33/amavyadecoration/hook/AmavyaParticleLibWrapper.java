@@ -5,7 +5,6 @@ import me.sanjy33.amavyaparticlelib.DoubleSpiralParticleEvent;
 import me.sanjy33.amavyaparticlelib.SpiralParticleEvent;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.entity.Player;
 import me.sanjy33.amavyaparticlelib.AmavyaParticleLib;
 
 public class AmavyaParticleLibWrapper implements AmavyaParticleLibHook {

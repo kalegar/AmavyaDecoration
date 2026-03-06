@@ -1,7 +1,6 @@
 package me.sanjy33.amavyadecoration;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Slab;
@@ -49,11 +48,6 @@ public class Shelf {
     public ShelfSlot setSlotMaterial(int slotIndex, ItemStack itemStack) {
         if (slotIndex < 0 || slotIndex >= MAX_SLOTS) return null;
         ShelfSlot currentSlot = shelfSlots[slotIndex];
-//        if (currentSlot == null)
-//            System.out.println("Current Slot is null");
-//        else {
-//            System.out.println("Current Slot is " + currentSlot.getItemStack().getType());
-//        }
         shelfSlots[slotIndex] = new ShelfSlot(itemStack, 0);
         return currentSlot;
     }
@@ -133,7 +127,7 @@ public class Shelf {
         ConfigurationSection slotSection = section.createSection("slots");
         for (int i = 0; i < MAX_SLOTS; i++) {
             ShelfSlot slot = shelfSlots[i];
-            if (slot == null) continue;;
+            if (slot == null) continue;
             ConfigurationSection subSection = slotSection.createSection(Integer.toString(i));
             shelfSlots[i].save(subSection);
         }
@@ -141,6 +135,7 @@ public class Shelf {
 
     public static Shelf load(ConfigurationSection section) {
         Location location = section.getLocation("location");
+        assert location != null;
         Shelf shelf = new Shelf(location);
         ConfigurationSection slotSection = section.getConfigurationSection("slots");
         if (slotSection != null) {
@@ -154,46 +149,34 @@ public class Shelf {
         return shelf;
     }
 
-    public static class ShelfSlot {
-        private final ItemStack itemStack;
-        private final double orientation;
+    public record ShelfSlot(ItemStack itemStack, double orientation) {
+            public ShelfSlot(ItemStack itemStack, double orientation) {
+                this.itemStack = itemStack.clone();
+                this.itemStack.setAmount(1);
+                this.orientation = orientation;
 
-        public ShelfSlot(ItemStack itemStack, double orientation) {
-            this.itemStack = itemStack.clone();
-            this.itemStack.setAmount(1);
-            this.orientation = orientation;
+            }
 
+            public ShelfSlot setOrientation(double orientation) {
+                return new ShelfSlot(itemStack, orientation);
+            }
+
+            public ShelfSlot addOrientation(double angle) {
+                double newOrientation = (this.orientation + angle) % 360;
+                return new ShelfSlot(itemStack, newOrientation);
+            }
+
+            public void save(ConfigurationSection section) {
+                section.set("itemstack", itemStack);
+                section.set("orientation", orientation);
+            }
+
+            public static ShelfSlot load(ConfigurationSection section) {
+                Object o_itemStack = section.get("itemstack");
+                if (o_itemStack == null) return null;
+                double orient = section.getDouble("orientation");
+                return new ShelfSlot((ItemStack) o_itemStack, orient);
+            }
         }
-
-        public ItemStack getItemStack() {
-            return itemStack;
-        }
-
-        public double getOrientation() {
-            return orientation;
-        }
-
-        public ShelfSlot setOrientation(double orientation) {
-            return new ShelfSlot(itemStack, orientation);
-        }
-
-        public ShelfSlot addOrientation(double angle) {
-            double newOrientation = (this.orientation + angle) % 360;
-//            System.out.println("New angle: " + newOrientation);
-            return new ShelfSlot(itemStack, newOrientation);
-        }
-
-        public void save(ConfigurationSection section) {
-            section.set("itemstack",itemStack);
-            section.set("orientation",orientation);
-        }
-
-        public static ShelfSlot load(ConfigurationSection section) {
-            Object o_itemStack = section.get("itemstack");
-            if (o_itemStack == null) return null;
-            double orient = section.getDouble("orientation");
-            return new ShelfSlot((ItemStack) o_itemStack, orient);
-        }
-    }
 
 }

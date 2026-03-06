@@ -2,7 +2,6 @@ package me.sanjy33.amavyadecoration.hook;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.entity.Player;
 
 public class AmavyaParticleLibMissing implements AmavyaParticleLibHook {
 

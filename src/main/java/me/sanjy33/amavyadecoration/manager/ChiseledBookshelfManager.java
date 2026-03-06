@@ -1,5 +1,6 @@
-package me.sanjy33.amavyadecoration;
+package me.sanjy33.amavyadecoration.manager;
 
+import me.sanjy33.amavyadecoration.AmavyaDecoration;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,15 +22,38 @@ import org.joml.Vector3f;
 
 import java.util.*;
 
-public class ChiseledBookshelfManager {
+public class ChiseledBookshelfManager implements AmavyaDecorationManager {
 
     private final AmavyaDecoration plugin;
     private final Map<String, List<TextDisplay>> textDisplays = new HashMap<>();
     private BukkitTask bookshelfTask = null;
+
+    // Config settings
+    private boolean enabled = false;
     private int bookshelfSearchRadius = 3;
 
     public ChiseledBookshelfManager(AmavyaDecoration plugin) {
         this.plugin = plugin;
+        plugin.managers.add(this);
+    }
+
+    @Override
+    public String getName() {
+        return "Chiseled Bookshelf Displays";
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void reload() {
+        enabled = plugin.getConfig().getBoolean("chiseled_bookshelf_display.enabled", true);
+        bookshelfSearchRadius = plugin.getConfig().getInt("chiseled_bookshelf_display.view_radius", 3);
+        if (enabled) {
+            startBookshelfTask();
+        } else {
+            cleanup();
+        }
     }
 
     public void stopBookshelfTask() {
@@ -42,9 +66,14 @@ public class ChiseledBookshelfManager {
 
     public void startBookshelfTask() {
         stopBookshelfTask();
+        if (!enabled) {
+            return;
+        }
+        final List<ChiseledBookshelf> bookshelves = new ArrayList<>();
+        final Set<String> keys = new HashSet<>();
         bookshelfTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            List<ChiseledBookshelf> bookshelves = new ArrayList<>();
-            Set<String> keys = new HashSet<>();
+            keys.clear();
+            bookshelves.clear();
             for (Player player : Bukkit.getOnlinePlayers()) {
                 getBookshelvesNearLocation(player.getLocation(), bookshelfSearchRadius, bookshelves);
             }

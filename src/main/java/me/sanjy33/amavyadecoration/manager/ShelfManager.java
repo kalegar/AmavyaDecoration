@@ -1,21 +1,44 @@
-package me.sanjy33.amavyadecoration;
+package me.sanjy33.amavyadecoration.manager;
 
+import me.sanjy33.amavyadecoration.AmavyaDecoration;
+import me.sanjy33.amavyadecoration.Shelf;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.logging.Level;
 
-public class ShelfManager {
+public class ShelfManager implements AmavyaDecorationManager {
 
     private final AmavyaDecoration plugin;
     private final Map<String, Shelf> shelves = new HashMap<>();
     private final Set<String> creatingShelves = new HashSet<>();
 
+    // Config settings
+    private boolean enabled;
+
     public ShelfManager(AmavyaDecoration plugin) {
         this.plugin = plugin;
+        plugin.managers.add(this);
+    }
+
+    @Override
+    public String getName() {
+        return "Slab Shelves";
+    }
+
+    public void reload() {
+        enabled = plugin.getConfig().getBoolean("slab_shelves.enabled", true);
+        if (enabled) {
+            refreshDisplays();
+        } else {
+            cleanupDisplays();
+        }
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     private String locationToString(Location location) {
@@ -28,6 +51,7 @@ public class ShelfManager {
     }
 
     public Shelf createShelfAtLocation(Location location) {
+        if (! enabled) return null;
         String key = locationToString(location);
         Shelf shelf = new Shelf(location);
         shelves.put(key, shelf);
@@ -36,6 +60,7 @@ public class ShelfManager {
     }
 
     public void deleteShelfAtLocation(Location location, boolean dropItems) {
+        if (! enabled) return;
         String key = locationToString(location);
         if (!shelves.containsKey(key)) return;
         Shelf shelf = shelves.get(key);
@@ -43,7 +68,7 @@ public class ShelfManager {
             for (int i = 0; i < Shelf.MAX_SLOTS; i++) {
                 Shelf.ShelfSlot slot = shelf.getSlot(i);
                 if (slot != null)
-                    shelf.getLocation().getWorld().dropItem(shelf.getLocation(), new ItemStack(slot.getItemStack()));
+                    shelf.getLocation().getWorld().dropItem(shelf.getLocation(), new ItemStack(slot.itemStack()));
             }
         }
         shelf.cleanupDisplays();
@@ -51,17 +76,24 @@ public class ShelfManager {
     }
 
     public boolean isCreatingShelf(UUID uuid, Location location) {
+        if (! enabled) return false;
         String key = uuid.toString()+"_"+locationToString(location);
         return creatingShelves.contains(key);
     }
 
     public void startCreatingShelf(UUID uuid, Location location) {
+        if (! enabled) return;
         final String key = uuid.toString()+"_"+locationToString(location);
         creatingShelves.add(key);
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
             creatingShelves.remove(key);
         }, 60L);
 
+    }
+
+    @Override
+    public void cleanup() {
+        cleanupDisplays();
     }
 
     public void cleanupDisplays() {
@@ -71,12 +103,14 @@ public class ShelfManager {
     }
 
     public void refreshDisplays() {
+        if (! enabled) return;
         for (Shelf shelf : shelves.values()) {
             shelf.refreshDisplay();
         }
     }
 
     public void refreshNearbyDisplays(Location location) {
+        if (! enabled) return;
         for (Shelf shelf : shelves.values()) {
             if (shelf.getLocation().getWorld().getName().equalsIgnoreCase(location.getWorld().getName()) && shelf.getLocation().distanceSquared(location) < 512) {
                 shelf.refreshDisplay();
@@ -85,6 +119,7 @@ public class ShelfManager {
     }
 
     public void refreshDisplaysInChunk(Chunk chunk) {
+        if (! enabled) return;
         for (Shelf shelf : shelves.values()) {
             Chunk shelfChunk = shelf.getLocation().getChunk();
             if (shelfChunk.getX() == chunk.getX() && shelfChunk.getZ() == chunk.getZ() && shelfChunk.getWorld().getName().equalsIgnoreCase(chunk.getWorld().getName())) {
