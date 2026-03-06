@@ -52,6 +52,7 @@ public final class AmavyaDecoration extends JavaPlugin {
     }
 
     public void reloadManagers() {
+        reloadConfig();
         for (AmavyaDecorationManager manager : managers) {
             manager.reload();
             if (manager.isEnabled()) {

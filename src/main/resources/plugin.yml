@@ -1,5 +1,5 @@
 name: AmavyaDecoration
-version: '1.2'
+version: '1.2.1'
 main: me.sanjy33.amavyadecoration.AmavyaDecoration
 api-version: '1.21'
 softdepend: [AmavyaParticleLib]
