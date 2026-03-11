@@ -2,8 +2,11 @@ package me.sanjy33.amavyadecoration.manager;
 
 import me.sanjy33.amavyadecoration.AmavyaDecoration;
 import me.sanjy33.amavyadecoration.Shelf;
+import me.sanjy33.amavyadecoration.listener.ShelfEventListener;
+import me.sanjy33.amavyadecoration.util.LocationKey;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -41,27 +44,23 @@ public class ShelfManager implements AmavyaDecorationManager {
         return enabled;
     }
 
-    private String locationToString(Location location) {
-        return location.getWorld().toString() + "_" + location.getBlockX() + "_" + location.getBlockY() + "_" + location.getBlockZ();
-    }
-
     public Shelf getShelfAtLocation(Location location) {
-        String key = locationToString(location);
-        return shelves.get(key);
+        return shelves.get(LocationKey.locationToString(location));
     }
 
     public Shelf createShelfAtLocation(Location location) {
         if (! enabled) return null;
-        String key = locationToString(location);
+        String key = LocationKey.locationToString(location);
         Shelf shelf = new Shelf(location);
         shelves.put(key, shelf);
-        plugin.particleLibHook.addBurstEffect(location, Particle.WAX_OFF, 2, 1, 0.1, 0.5, 6);
+        plugin.particleLibHook.addBurstEffect(location, Particle.WAX_OFF, 2, 1, 0.1, 0.5, 6, null);
+
         return shelf;
     }
 
     public void deleteShelfAtLocation(Location location, boolean dropItems) {
         if (! enabled) return;
-        String key = locationToString(location);
+        String key = LocationKey.locationToString(location);
         if (!shelves.containsKey(key)) return;
         Shelf shelf = shelves.get(key);
         if (dropItems) {
@@ -77,13 +76,13 @@ public class ShelfManager implements AmavyaDecorationManager {
 
     public boolean isCreatingShelf(UUID uuid, Location location) {
         if (! enabled) return false;
-        String key = uuid.toString()+"_"+locationToString(location);
+        String key = uuid.toString()+"|"+LocationKey.locationToString(location);
         return creatingShelves.contains(key);
     }
 
     public void startCreatingShelf(UUID uuid, Location location) {
         if (! enabled) return;
-        final String key = uuid.toString()+"_"+locationToString(location);
+        final String key = uuid.toString()+"|"+LocationKey.locationToString(location);
         creatingShelves.add(key);
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
             creatingShelves.remove(key);
@@ -132,7 +131,9 @@ public class ShelfManager implements AmavyaDecorationManager {
         return null;
     }
 
-    public void save(ConfigurationSection section) {
+    @Override
+    public void saveData(YamlConfiguration config) {
+        ConfigurationSection section = config.createSection("shelves");
         int i = 0;
         for (String key : shelves.keySet()) {
             ConfigurationSection subSection = section.createSection(Integer.toString(i));
@@ -141,7 +142,9 @@ public class ShelfManager implements AmavyaDecorationManager {
         }
     }
 
-    public void load(ConfigurationSection section) {
+    @Override
+    public void loadData(YamlConfiguration config) {
+        ConfigurationSection section = config.getConfigurationSection("shelves");
         if (section == null) return;
         Set<String> keys = section.getKeys(false);
         int loaded = 0;
@@ -149,7 +152,7 @@ public class ShelfManager implements AmavyaDecorationManager {
             ConfigurationSection subSection = section.getConfigurationSection(key);
             if (subSection == null) continue;
             Shelf shelf = Shelf.load(subSection);
-            shelves.put(locationToString(shelf.getLocation()), shelf);
+            shelves.put(LocationKey.locationToString(shelf.getLocation()), shelf);
             loaded++;
         }
         plugin.getLogger().log(Level.INFO, "Loaded " + loaded + " shelves.");

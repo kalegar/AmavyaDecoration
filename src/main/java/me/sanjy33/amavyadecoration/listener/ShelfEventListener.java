@@ -1,6 +1,8 @@
-package me.sanjy33.amavyadecoration;
+package me.sanjy33.amavyadecoration.listener;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
+import me.sanjy33.amavyadecoration.AmavyaDecoration;
+import me.sanjy33.amavyadecoration.Shelf;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -24,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 
-public class PlayerListener implements Listener {
+public class ShelfEventListener implements Listener {
 
     private final AmavyaDecoration plugin;
 //    private final Set<Material> shelfMaterials = new HashSet<>(Set.of(
@@ -72,7 +74,7 @@ public class PlayerListener implements Listener {
 //            Material.QUARTZ_SLAB
 //    ));
 
-    public PlayerListener(AmavyaDecoration plugin) {
+    public ShelfEventListener(AmavyaDecoration plugin) {
         this.plugin = plugin;
     }
 

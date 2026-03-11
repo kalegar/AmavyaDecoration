@@ -6,7 +6,7 @@ import org.bukkit.Particle;
 public class AmavyaParticleLibMissing implements AmavyaParticleLibHook {
 
     @Override
-    public void addBurstEffect(Location location, Particle particle, long duration, float period, double radius, double maxRadius, int steps) {
+    public void addBurstEffect(Location location, Particle particle, long duration, float period, double radius, double maxRadius, int steps, Object data) {
 
     }
 

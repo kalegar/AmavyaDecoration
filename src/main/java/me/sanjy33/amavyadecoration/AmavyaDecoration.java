@@ -5,7 +5,10 @@ import me.sanjy33.amavyadecoration.command.ReloadCommand;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibMissing;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibHook;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibWrapper;
+import me.sanjy33.amavyadecoration.listener.AutoFeedingListener;
+import me.sanjy33.amavyadecoration.listener.ShelfEventListener;
 import me.sanjy33.amavyadecoration.manager.AmavyaDecorationManager;
+import me.sanjy33.amavyadecoration.manager.AutoFeedingManager;
 import me.sanjy33.amavyadecoration.manager.ChiseledBookshelfManager;
 import me.sanjy33.amavyadecoration.manager.ShelfManager;
 import org.bukkit.Bukkit;
@@ -24,19 +27,20 @@ public final class AmavyaDecoration extends JavaPlugin {
     public final List<AmavyaDecorationManager> managers = new ArrayList<>();
     public final ShelfManager shelfManager = new ShelfManager(this);
     public final ChiseledBookshelfManager chiseledBookshelfManager = new ChiseledBookshelfManager(this);
+    public final AutoFeedingManager autoFeedingManager = new AutoFeedingManager(this);
     public AmavyaParticleLibHook particleLibHook;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
-        Listener eventListener = new PlayerListener(this);
 
         setupAmavyaParticleLib();
 
         BasicCommand reloadCommand = new ReloadCommand(this);
         registerCommand("adreload", reloadCommand);
 
-        getServer().getPluginManager().registerEvents(eventListener, this);
+        getServer().getPluginManager().registerEvents(new ShelfEventListener(this), this);
+        getServer().getPluginManager().registerEvents(new AutoFeedingListener(autoFeedingManager), this);
         saveDefaultConfig();
         load();
         reloadManagers();
@@ -66,8 +70,9 @@ public final class AmavyaDecoration extends JavaPlugin {
     private void load() {
         File file = new File(getDataFolder(), "data.yml");
         YamlConfiguration baseSection = YamlConfiguration.loadConfiguration(file);
-        ConfigurationSection shelfSection = baseSection.getConfigurationSection("shelves");
-        shelfManager.load(shelfSection);
+        for (AmavyaDecorationManager manager : managers) {
+            manager.loadData(baseSection);
+        }
     }
 
     public void saveAsync() {
@@ -76,8 +81,9 @@ public final class AmavyaDecoration extends JavaPlugin {
 
     private void save() {
         YamlConfiguration config = new YamlConfiguration();
-        ConfigurationSection shelfSection = config.createSection("shelves");
-        shelfManager.save(shelfSection);
+        for (AmavyaDecorationManager manager : managers) {
+            manager.saveData(config);
+        }
         File file = new File(getDataFolder(), "data.yml");
         try {
             config.save(file);

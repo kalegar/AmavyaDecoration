@@ -1,11 +1,8 @@
 package me.sanjy33.amavyadecoration.hook;
 
-import me.sanjy33.amavyaparticlelib.BurstParticleEvent;
-import me.sanjy33.amavyaparticlelib.DoubleSpiralParticleEvent;
-import me.sanjy33.amavyaparticlelib.SpiralParticleEvent;
+import me.sanjy33.amavyaparticlelib.*;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import me.sanjy33.amavyaparticlelib.AmavyaParticleLib;
 
 public class AmavyaParticleLibWrapper implements AmavyaParticleLibHook {
 
@@ -17,8 +14,10 @@ public class AmavyaParticleLibWrapper implements AmavyaParticleLibHook {
         AmavyaParticleLib.addParticleEvent(new DoubleSpiralParticleEvent(location, particle, duration, length, radius));
     }
 
-    public void addBurstEffect(Location location, Particle particle, long duration, float period, double radius, double maxRadius, int steps) {
-        AmavyaParticleLib.addParticleEvent(new BurstParticleEvent(location, particle, duration, period, radius, maxRadius, steps));
+    public void addBurstEffect(Location location, Particle particle, long duration, float period, double radius, double maxRadius, int steps, Object data) {
+        ParticleEvent event = new BurstParticleEvent(location, particle, duration, period, radius, maxRadius, steps);
+        event.setData(data);
+        AmavyaParticleLib.addParticleEvent(event);
     }
 
 }

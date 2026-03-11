@@ -1,12 +1,15 @@
 package me.sanjy33.amavyadecoration.manager;
 
 import me.sanjy33.amavyadecoration.AmavyaDecoration;
+import me.sanjy33.amavyadecoration.util.LocationKey;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.ChiseledBookshelf;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
@@ -56,6 +59,17 @@ public class ChiseledBookshelfManager implements AmavyaDecorationManager {
         }
     }
 
+    @Override
+    public void loadData(YamlConfiguration config) {
+
+    }
+
+    @Override
+    public void saveData(YamlConfiguration config) {
+
+    }
+
+
     public void stopBookshelfTask() {
         if (bookshelfTask != null) {
             bookshelfTask.cancel();
@@ -78,7 +92,7 @@ public class ChiseledBookshelfManager implements AmavyaDecorationManager {
                 getBookshelvesNearLocation(player.getLocation(), bookshelfSearchRadius, bookshelves);
             }
             for (ChiseledBookshelf bookshelf : bookshelves) {
-                String key = locationToStringKey(bookshelf.getLocation());
+                String key = LocationKey.locationToString(bookshelf.getLocation());
                 keys.add(key);
                 List<TextDisplay> displays;
                 if (textDisplays.containsKey(key)) {
@@ -206,10 +220,6 @@ public class ChiseledBookshelfManager implements AmavyaDecorationManager {
             }
         }
 
-    }
-
-    public String locationToStringKey(Location location) {
-        return location.getWorld().getName() + "|" + location.getBlockX() + "|" + location.getBlockY() + "|" + location.getBlockZ();
     }
 
     public Location stringKeyToLocation(String key) {

@@ -3,3 +3,10 @@ slab_shelves:
 chiseled_bookshelf_display:
   enabled: true
   view_radius: 3
+auto_animal_feeding:
+  enabled: false
+  radius: 16
+  cooldownms: 30000
+  task:
+    delay: 20
+    period: 40
