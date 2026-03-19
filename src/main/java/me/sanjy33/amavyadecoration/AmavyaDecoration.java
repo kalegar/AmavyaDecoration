@@ -6,11 +6,9 @@ import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibMissing;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibHook;
 import me.sanjy33.amavyadecoration.hook.AmavyaParticleLibWrapper;
 import me.sanjy33.amavyadecoration.listener.AutoFeedingListener;
+import me.sanjy33.amavyadecoration.listener.FlagEventListener;
 import me.sanjy33.amavyadecoration.listener.ShelfEventListener;
-import me.sanjy33.amavyadecoration.manager.AmavyaDecorationManager;
-import me.sanjy33.amavyadecoration.manager.AutoFeedingManager;
-import me.sanjy33.amavyadecoration.manager.ChiseledBookshelfManager;
-import me.sanjy33.amavyadecoration.manager.ShelfManager;
+import me.sanjy33.amavyadecoration.manager.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -28,6 +26,7 @@ public final class AmavyaDecoration extends JavaPlugin {
     public final ShelfManager shelfManager = new ShelfManager(this);
     public final ChiseledBookshelfManager chiseledBookshelfManager = new ChiseledBookshelfManager(this);
     public final AutoFeedingManager autoFeedingManager = new AutoFeedingManager(this);
+    public final FlagManager flagManager = new FlagManager(this);
     public AmavyaParticleLibHook particleLibHook;
 
     @Override
@@ -41,6 +40,7 @@ public final class AmavyaDecoration extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new ShelfEventListener(this), this);
         getServer().getPluginManager().registerEvents(new AutoFeedingListener(autoFeedingManager), this);
+        getServer().getPluginManager().registerEvents(new FlagEventListener(flagManager), this);
         saveDefaultConfig();
         load();
         reloadManagers();

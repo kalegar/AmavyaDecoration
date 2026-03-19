@@ -10,3 +10,22 @@ auto_animal_feeding:
   task:
     delay: 20
     period: 40
+flags:
+  enabled: true
+  materials:
+    - BLACK_WOOL
+    - WHITE_WOOL
+    - BLUE_WOOL
+    - CYAN_WOOL
+    - BROWN_WOOL
+    - GRAY_WOOL
+    - ORANGE_WOOL
+    - PINK_WOOL
+    - RED_WOOL
+    - GREEN_WOOL
+    - LIGHT_BLUE_WOOL
+    - LIGHT_GRAY_WOOL
+    - LIME_WOOL
+    - MAGENTA_WOOL
+    - PURPLE_WOOL
+    - YELLOW_WOOL
