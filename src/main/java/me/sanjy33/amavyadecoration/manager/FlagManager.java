@@ -146,12 +146,10 @@ public class FlagManager implements AmavyaDecorationManager {
                 if (!flag.isChunkLoaded()) {
                     continue;
                 }
-                if (!flag.hasFlagPole()) {
-                    flag.detectFlagPole();
-                    if (!flag.isValid()) {
-                        it.remove();
-                        continue;
-                    }
+                if (!flag.detectFlagPole()) {
+                    flag.breakNaturally();
+                    it.remove();
+                    continue;
                 }
                 flag.animate(windSpeed);
             }

@@ -16,6 +16,6 @@ public class SinSinWindFunction implements WindFunction {
 
     @Override
     public float getValue(float x) {
-        return (float) (Math.sin(x/2d) * Math.sin(x) * 0.75f);
+        return (float) (Math.sin(x/2d) * Math.sin(x/4d));
     }
 }
